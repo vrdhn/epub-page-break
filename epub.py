@@ -5,7 +5,7 @@
 import re,sys, traceback, zipfile, os
 import os.path
 import xml.dom.minidom
-from xml.dom.minidom import Node
+from xml.dom.minidom import Node, DOMImplementation
 
 
 
@@ -78,8 +78,25 @@ class ReadEPUB:
             ele_a.setAttribute('href',lp[0])
             ele_a.appendChild(navdom.createTextNode(lp[1]))
 
+        ## make sure nav_file is proper html.
+        doctype = DOMImplementation().createDocumentType( qualifiedName='html', publicId='', systemId='' )
+        navdom.insertBefore(doctype,navdom.documentElement)
+        html = navdom.documentElement
+        html.setAttribute('xmlns',"http://www.w3.org/1999/xhtml")
+        html.setAttribute('xmlns:epub',"http://www.idpf.org/2007/ops")
+        html.setAttribute('xml:lang',"en")
+        html.setAttribute('lang',"en")
         self.content[opf_dir + "/" + nav_file] = navdom.toprettyxml(encoding='utf-8')
 
+
+        ##
+        #print(opf_file)
+        #self.pxml(self.xml(opf_file))
+        #print(opf_dir + "/" + toc_file)
+        #self.pxml(self.xml(opf_dir + "/" + toc_file))
+        #print(opf_dir + "/" + nav_file)
+        #self.pxml(self.xml(opf_dir + "/" + nav_file))
+        ##
 
     def has_data(self):
         return not not self.pages
@@ -103,16 +120,8 @@ class ReadEPUB:
         lnk = "%s#page%s" % ( relname, id)
         self.pages.append([ lnk,pn])
         log( "    Page ", pn, " at ", lnk)
-        return '<span epub:type="pagebreak" id="page_%s">%s</span>' % (id,pn)
+        return '<span epub:type="pagebreak" id="page%s">%s</span>' % (id,pn)
 
-        ##
-        #print(opf_file)
-        #self.pxml(self.xml(opf_file))
-        #print(opf_dir + "/" + toc_file)
-        #self.pxml(self.xml(opf_dir + "/" + toc_file))
-        #print(opf_dir + "/" + nav_file)
-        #self.pxml(self.xml(opf_dir + "/" + nav_file))
-        ##
 
     def xml(self,fname):
         with self.zfile.open(fname) as fd:
