@@ -10,8 +10,9 @@ from xml.dom.minidom import Node, DOMImplementation
 
 
 class ReadEPUB:
-    def __init__(self, fname,log):
+    def __init__(self, fname,log,lang):
         self.fname = fname
+        self.lang = lang
         self.zfile = zipfile.ZipFile(fname,'r',zipfile.ZIP_DEFLATED,True)
         log('opened', fname)
 
@@ -88,8 +89,8 @@ class ReadEPUB:
         html = navdom.documentElement
         html.setAttribute('xmlns',"http://www.w3.org/1999/xhtml")
         html.setAttribute('xmlns:epub',"http://www.idpf.org/2007/ops")
-        html.setAttribute('xml:lang',"en")
-        html.setAttribute('lang',"en")
+        html.setAttribute('xml:lang',self.lang)
+        html.setAttribute('lang',self.lang)
         self.content[opf_dir + "/" + nav_file] = navdom.toprettyxml(encoding='utf-8')
 
 
@@ -179,8 +180,9 @@ class ReadEPUB:
 
 
 def add_pagebreak( input_dir ,
-             output_dir ,
-             logfn):
+                   output_dir ,
+                   logfn,
+                   lang ):
     ## Recurse in input_Dir
     input_dir = os.path.abspath(input_dir)
     output_dir = os.path.abspath(output_dir)
@@ -194,7 +196,7 @@ def add_pagebreak( input_dir ,
                 in_file = os.path.join(input_dir,relname,f)
                 out_file = os.path.join(output_dir,relname,f)
                 logfn("***\nConverting ", in_file, " to ", out_file)
-                p = ReadEPUB(in_file,logfn)
+                p = ReadEPUB(in_file,logfn,lang)
                 if p.has_data():
                     if not os.path.exists(os.path.dirname(out_file)):
                         os.makedirs(os.path.dirname(out_file))
@@ -222,7 +224,8 @@ def add_pagebreak( input_dir ,
 if __name__ == "__main__":
     def log(*args):
         print ' '.join([str(y) for y in args])
-    if len(sys.argv) != 3:
-        print "Usage: ./epub_-page_break.py <input_dir> <output_dir>"
+    if len(sys.argv) != 3 and len(sys.argv) != 4 :
+        print "Usage: ./epub_-page_break.py <input_dir> <output_dir> [lang: en, hi etc.]"
     else:
-        add_pagebreak(input_dir = sys.argv[1], output_dir = sys.argv[2], logfn = log)
+        lang = sys.argv[3] if len(sys.argv)  == 4 else 'en'
+        add_pagebreak(input_dir = sys.argv[1], output_dir = sys.argv[2], logfn = log, lang = lang)
