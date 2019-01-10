@@ -26,8 +26,12 @@ class ReadEPUB:
         log('toc item is',toc_item)
 
         ## toc file
-        toc_file = self.xget(self.xml(opf_file),['<package','<manifest','<item', '#'+toc_item],'href')
-        log('toc file is' , toc_file)
+        if toc_item:
+            toc_file = self.xget(self.xml(opf_file),['<package','<manifest','<item', '#'+toc_item],'href')
+            log('toc file is' , toc_file)
+        else:
+            log('No TOC','')
+            toc_file = None
 
         ## nav file
         nav_file = self.xget(self.xml(opf_file),['<package','<manifest','<item', '=properties=nav'],'href')
